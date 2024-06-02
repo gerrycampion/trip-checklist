@@ -1,3 +1,5 @@
+export const itemsCategoriesSheet = "Items_Categories";
+
 export const itemsCategoriesSchema = {
   A: "item",
   B: "category",

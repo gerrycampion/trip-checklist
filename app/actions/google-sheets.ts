@@ -1,12 +1,17 @@
 "use server";
 import { Table } from "oh-my-spreadsheets";
-import { itemsCategoriesSchema, ItemCategory } from "../types";
+import {
+  itemsCategoriesSchema,
+  ItemCategory,
+  itemsCategoriesSheet,
+} from "../types";
+import { google } from "googleapis";
 
 const itemsCategoriesTable = new Table<typeof itemsCategoriesSchema>(
   itemsCategoriesSchema,
   {
     spreadsheetID: process.env.SPREADSHEET_ID!,
-    sheet: "Items_Categories",
+    sheet: itemsCategoriesSheet,
     email: process.env.CLIENT_EMAIL!,
     privateKey: process.env.PRIVATE_KEY!,
   }
@@ -46,4 +51,49 @@ export async function deleteItemCategory(ic: ItemCategory) {
 
 export async function readSheetNames() {
   return itemsCategoriesTable.readSheets();
+}
+
+const client = new google.auth.JWT(
+  process.env.CLIENT_EMAIL,
+  undefined,
+  process.env.PRIVATE_KEY,
+  ["https://www.googleapis.com/auth/spreadsheets"]
+);
+const gsapi = google.sheets({ version: "v4", auth: client });
+
+export async function activateSheet(sheetName: string) {
+  const sheetNames = await readSheetNames();
+  const newSheet = sheetNames.find(
+    (sheet) => sheet.properties?.title === sheetName
+  );
+  const oldSheets = sheetNames.filter((sheet) =>
+    sheet.properties?.title.startsWith("*")
+  );
+  const updateSheetProperties = [
+    ...oldSheets.map((oldSheet) => ({
+      updateSheetProperties: {
+        properties: {
+          sheetId: oldSheet.properties?.sheetId,
+          title: oldSheet.properties?.title.replace("*", ""),
+        },
+        fields: "title",
+      },
+    })),
+    {
+      updateSheetProperties: {
+        properties: {
+          sheetId: newSheet.properties?.sheetId,
+          title: `*${newSheet.properties?.title}`,
+        },
+        fields: "title",
+      },
+    },
+  ];
+  const result = await gsapi.spreadsheets.batchUpdate({
+    spreadsheetId: process.env.SPREADSHEET_ID,
+    requestBody: {
+      requests: updateSheetProperties,
+    },
+  });
+  return;
 }
