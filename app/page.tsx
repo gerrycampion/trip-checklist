@@ -2,23 +2,12 @@
 import { RowValues } from "oh-my-spreadsheets/build/types/table";
 import Tagger from "./tagger";
 import { itemsCategoriesSchema, itemsCategoriesSheet } from "./types";
-import {
-  activateSheet,
-  readItemsCategories,
-  readSheetNames,
-} from "./actions/google-sheets";
+import { readItemsCategories, readSheetNames } from "./actions/google-sheets";
 import { useEffect, useState } from "react";
-import {
-  FormControl,
-  InputLabel,
-  MenuItem,
-  Select,
-  SelectChangeEvent,
-  Stack,
-  Tab,
-} from "@mui/material";
+import { Stack, Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { sheets_v4 } from "googleapis";
+import SheetList from "./sheetList";
 
 // TODO:
 // checklist view
@@ -61,13 +50,6 @@ export default function Home() {
     setTab(newTab);
   };
 
-  const handleListChange = async (event: SelectChangeEvent) => {
-    const sheetName = event.target.value as string;
-    setCurrentSheet(sheetName);
-    await activateSheet(sheetName);
-    getSheetNames();
-  };
-
   return (
     <TabContext value={tab}>
       <Stack direction={"row"}>
@@ -82,26 +64,11 @@ export default function Home() {
           <Tab label="Categories" value="Categories" />
           <Tab label={currentSheet} value={currentSheet}></Tab>
         </TabList>
-        <FormControl>
-          <InputLabel id="select-list-label">{"List"}</InputLabel>
-          <Select
-            labelId="select-list-label"
-            id="select-list"
-            value={currentSheet}
-            label="List"
-            onChange={handleListChange}
-          >
-            {sheets
-              .filter(
-                (sheet) => sheet?.properties?.title !== itemsCategoriesSheet
-              )
-              .map((sheet) => (
-                <MenuItem value={sheet?.properties?.title}>
-                  {sheet?.properties?.title}
-                </MenuItem>
-              ))}
-          </Select>
-        </FormControl>
+        <SheetList
+          sheets={sheets}
+          currentSheet={currentSheet}
+          getSheetNames={getSheetNames}
+        />
       </Stack>
       <TabPanel value="Items">
         <Tagger

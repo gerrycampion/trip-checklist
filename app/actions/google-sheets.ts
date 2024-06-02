@@ -61,6 +61,24 @@ const client = new google.auth.JWT(
 );
 const gsapi = google.sheets({ version: "v4", auth: client });
 
+export async function createSheet(sheetName: string) {
+  const result = await gsapi.spreadsheets.batchUpdate({
+    spreadsheetId: process.env.SPREADSHEET_ID,
+    requestBody: {
+      requests: [
+        {
+          addSheet: {
+            properties: {
+              title: sheetName,
+            },
+          },
+        },
+      ],
+    },
+  });
+  return;
+}
+
 export async function activateSheet(sheetName: string) {
   const sheetNames = await readSheetNames();
   const newSheet = sheetNames.find(
