@@ -2,7 +2,12 @@
 import { RowValues } from "oh-my-spreadsheets/build/types/table";
 import Tagger from "./tagger";
 import { itemsCategoriesSchema, itemsCategoriesSheet } from "./types";
-import { readItemsCategories, readSheetNames } from "./actions/google-sheets";
+import {
+  addCategory,
+  addItem,
+  readItemsCategories,
+  readSheetNames,
+} from "./actions/google-sheets";
 import { useEffect, useState } from "react";
 import { Stack, Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
@@ -76,6 +81,10 @@ export default function Home() {
           setItemsCategories={setItemsCategories}
           groupByCol="item"
           valuesCol="category"
+          onAdd={async (group) => {
+            const sheet = await addItem(currentSheet, group);
+            //todo: setsheetcontent
+          }}
         />
       </TabPanel>
       <TabPanel value="Categories">
@@ -84,6 +93,10 @@ export default function Home() {
           setItemsCategories={setItemsCategories}
           groupByCol="category"
           valuesCol="item"
+          onAdd={async (group) => {
+            const sheet = await addCategory(currentSheet, group);
+            //todo: setsheetcontent
+          }}
         />
       </TabPanel>
       <TabPanel key={currentSheet} value={currentSheet}>

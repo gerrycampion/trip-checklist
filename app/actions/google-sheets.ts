@@ -4,6 +4,7 @@ import {
   itemsCategoriesSchema,
   ItemCategory,
   itemsCategoriesSheet,
+  checklistSchema,
 } from "../types";
 import { google } from "googleapis";
 
@@ -114,4 +115,29 @@ export async function activateSheet(sheetName: string) {
     },
   });
   return;
+}
+
+export async function addItem(sheet: string, item: string) {
+  const table = new Table<typeof checklistSchema>(checklistSchema, {
+    spreadsheetID: process.env.SPREADSHEET_ID!,
+    sheet: sheet,
+    email: process.env.CLIENT_EMAIL!,
+    privateKey: process.env.PRIVATE_KEY!,
+  });
+  const results = await table.read({
+    where: { item },
+  });
+  if (results.length > 0) {
+    return;
+  }
+  await table.create({ data: { item, checked: "false" } });
+}
+
+export async function addCategory(sheetName: string, category: string) {
+  const results = await itemsCategoriesTable.read({
+    where: { category },
+  });
+  for (const result of results) {
+    await addItem(sheetName, result.item);
+  }
 }

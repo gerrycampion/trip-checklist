@@ -9,3 +9,13 @@ export interface ItemCategory {
   item: string;
   category: string;
 }
+
+export const checklistSchema = {
+  A: "item",
+  B: "checked",
+} as const;
+
+export interface Checklist {
+  item: string;
+  checked: "TRUE" | "FALSE";
+}
