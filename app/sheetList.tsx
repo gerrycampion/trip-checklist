@@ -11,11 +11,11 @@ import { SyntheticEvent } from "react";
 
 export default function SheetList({
   sheets,
-  currentSheet,
+  currentSheetName,
   getSheetNames,
 }: {
   sheets: sheets_v4.Schema$Sheet[];
-  currentSheet: string;
+  currentSheetName: string;
   getSheetNames: () => void;
 }) {
   const handleListChange = async (
@@ -35,7 +35,7 @@ export default function SheetList({
 
   return (
     <Autocomplete
-      value={currentSheet}
+      value={currentSheetName}
       onChange={handleListChange}
       selectOnFocus
       clearOnBlur

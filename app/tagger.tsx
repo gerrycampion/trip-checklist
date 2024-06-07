@@ -12,6 +12,7 @@ import { itemsCategoriesSchema } from "./types";
 import { Dispatch, SetStateAction, SyntheticEvent } from "react";
 import { addItemCategory, deleteItemCategory } from "./actions/google-sheets";
 import { Add } from "@mui/icons-material";
+import { groupBy } from "./utils";
 
 export default function Tagger({
   itemsCategories,
@@ -28,15 +29,6 @@ export default function Tagger({
   valuesCol: "item" | "category";
   onAdd: (group: string) => void;
 }) {
-  const groupBy = <T extends { [key: string]: any }>(
-    list: T[],
-    key: string
-  ): { [group: string]: T[] } =>
-    list.reduce((aggregate: { [key: string]: T[] }, current) => {
-      (aggregate[current[key]] = aggregate[current[key]] || []).push(current);
-      return aggregate;
-    }, {});
-
   const getGroups = (ics: RowValues<typeof itemsCategoriesSchema>[]) =>
     Array.from(new Set(ics.map((ic) => ic[valuesCol]))).filter(
       (category) => category !== undefined

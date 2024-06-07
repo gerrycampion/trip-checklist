@@ -22,6 +22,34 @@ export async function readItemsCategories() {
   return itemsCategoriesTable.read();
 }
 
+export async function readChecklist(sheet: string) {
+  const table = new Table<typeof checklistSchema>(checklistSchema, {
+    spreadsheetID: process.env.SPREADSHEET_ID!,
+    sheet: sheet,
+    email: process.env.CLIENT_EMAIL!,
+    privateKey: process.env.PRIVATE_KEY!,
+  });
+  return table.read();
+}
+
+export async function setChecked(
+  sheet: string,
+  value: string,
+  checked: boolean
+) {
+  const table = new Table<typeof checklistSchema>(checklistSchema, {
+    spreadsheetID: process.env.SPREADSHEET_ID!,
+    sheet: sheet,
+    email: process.env.CLIENT_EMAIL!,
+    privateKey: process.env.PRIVATE_KEY!,
+  });
+  await table.update({
+    where: { item: value },
+    data: { checked: checked ? "TRUE" : "FALSE" },
+  });
+  return table.read();
+}
+
 export async function addItemCategory(ic: ItemCategory) {
   const data = { item: ic.item, category: ic.category };
   await itemsCategoriesTable.delete({
