@@ -95,6 +95,14 @@ export default function Home() {
           getSheetNames={getSheetNames}
         />
       </Stack>
+      <TabPanel key={currentSheetName} value={currentSheetName}>
+        <CheckboxList
+          currentSheetName={currentSheetName}
+          itemsCategories={itemsCategories}
+          checklist={checklist}
+          setChecklist={setChecklist}
+        />
+      </TabPanel>
       <TabPanel value="Items">
         <Tagger
           itemsCategories={itemsCategories}
@@ -117,14 +125,6 @@ export default function Home() {
             const sheet = await addCategory(currentSheetName, group);
             getChecklist();
           }}
-        />
-      </TabPanel>
-      <TabPanel key={currentSheetName} value={currentSheetName}>
-        <CheckboxList
-          currentSheetName={currentSheetName}
-          itemsCategories={itemsCategories}
-          checklist={checklist}
-          setChecklist={setChecklist}
         />
       </TabPanel>
     </TabContext>

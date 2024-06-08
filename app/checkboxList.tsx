@@ -40,7 +40,8 @@ export default function CheckboxList({
           : undefined;
       })
       .filter((item) => item),
-    "category"
+    "category",
+    "item"
   );
 
   const toggleCheck = async (value: string) => {

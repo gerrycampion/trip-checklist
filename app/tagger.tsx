@@ -34,8 +34,9 @@ export default function Tagger({
       (category) => category !== undefined
     );
 
-  const groupsByValue = groupBy(itemsCategories, groupByCol);
+  const groupsByValue = groupBy(itemsCategories, groupByCol, valuesCol);
   const allGroups = getGroups(itemsCategories);
+  allGroups.sort();
 
   const onAutoCompleteChange = async (
     group: string,
