@@ -21,11 +21,13 @@ import SheetList from "./sheetList";
 import CheckboxList from "./checkboxList";
 
 // TODO:
+// edit items and category names
 // delete checklist item
 // Fix sizing
 // Create table, item, and category
 // Rename table, item, and category
 // Delete table
+// react to changes (like checkbox) before syncing
 
 
 export default function Home() {
@@ -106,7 +108,7 @@ export default function Home() {
           itemsCategories={itemsCategories}
           setItemsCategories={setItemsCategories}
           groupByCol="item"
-          valuesCol="category"
+          tagsCol="category"
           onAdd={async (group) => {
             const sheet = await addItem(currentSheetName, group);
             getChecklist();
@@ -118,7 +120,7 @@ export default function Home() {
           itemsCategories={itemsCategories}
           setItemsCategories={setItemsCategories}
           groupByCol="category"
-          valuesCol="item"
+          tagsCol="item"
           onAdd={async (group) => {
             const sheet = await addCategory(currentSheetName, group);
             getChecklist();

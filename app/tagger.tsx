@@ -18,7 +18,7 @@ export default function Tagger({
   itemsCategories,
   setItemsCategories,
   groupByCol,
-  valuesCol,
+  tagsCol,
   onAdd,
 }: {
   itemsCategories: RowValues<typeof itemsCategoriesSchema>[];
@@ -26,18 +26,18 @@ export default function Tagger({
     SetStateAction<RowValues<typeof itemsCategoriesSchema>[]>
   >;
   groupByCol: "item" | "category";
-  valuesCol: "item" | "category";
+  tagsCol: "item" | "category";
   onAdd: (group: string) => void;
 }) {
   const getGroups = (ics: RowValues<typeof itemsCategoriesSchema>[]) =>
-    Array.from(new Set(ics.map((ic) => ic[valuesCol]))).filter(
+    Array.from(new Set(ics.map((ic) => ic[tagsCol]))).filter(
       (category) => category !== undefined
     );
 
   const groupsByValue = groupBy(itemsCategories, groupByCol, (ic1, ic2) =>
-    (ic1[valuesCol] ?? "")
+    (ic1[tagsCol] ?? "")
       .toLowerCase()
-      .localeCompare((ic2[valuesCol] ?? "").toLowerCase())
+      .localeCompare((ic2[tagsCol] ?? "").toLowerCase())
   );
   const allGroups = getGroups(itemsCategories);
   allGroups.sort();
@@ -45,14 +45,14 @@ export default function Tagger({
   const onAutoCompleteChange = async (
     group: string,
     event: SyntheticEvent<Element, Event>,
-    values: string[],
+    tags: string[],
     reason: AutocompleteChangeReason,
     details?: AutocompleteChangeDetails<string>
   ) => {
-    console.log({ group, event, values, reason, details });
+    console.log({ group, event, tags, reason, details });
     const itemCategory = {
       [groupByCol]: group,
-      [valuesCol]: details?.option ?? "",
+      [tagsCol]: details?.option ?? "",
     } as { item: string; category: string };
     if (["createOption", "selectOption"].includes(reason)) {
       setItemsCategories([
@@ -67,7 +67,7 @@ export default function Tagger({
     } else if (reason === "removeOption") {
       setItemsCategories(
         itemsCategories.filter(
-          (ic) => ic[groupByCol] !== group || ic[valuesCol] !== details?.option
+          (ic) => ic[groupByCol] !== group || ic[tagsCol] !== details?.option
         )
       );
       const ics = await deleteItemCategory(itemCategory);
@@ -77,7 +77,7 @@ export default function Tagger({
 
   return (
     <Stack spacing={1} sx={{ width: "100%" }}>
-      {Object.entries(groupsByValue).map(([group, values]) => (
+      {Object.entries(groupsByValue).map(([group, tags]) => (
         <Stack spacing={1} direction={"row"} sx={{ width: "100%" }}>
           <IconButton onClick={() => onAdd(group)}>
             <Add />
@@ -89,11 +89,11 @@ export default function Tagger({
             multiple
             key={`tagger-${group}`}
             options={allGroups}
-            value={values
-              .filter((ic) => ic[valuesCol])
-              .map((ic) => ic[valuesCol])}
-            onChange={(event: any, newValues: string[], reason, details) => {
-              onAutoCompleteChange(group, event, newValues, reason, details);
+            value={tags
+              .filter((ic) => ic[tagsCol])
+              .map((ic) => ic[tagsCol])}
+            onChange={(event: any, newTags: string[], reason, details) => {
+              onAutoCompleteChange(group, event, newTags, reason, details);
             }}
             renderTags={(vs: readonly string[], getTagProps) =>
               vs.map((option: string, index: number) => (
