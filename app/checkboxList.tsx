@@ -6,7 +6,7 @@ import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
 import Checkbox from "@mui/material/Checkbox";
 import IconButton from "@mui/material/IconButton";
-import CommentIcon from "@mui/icons-material/Comment";
+import { Delete } from "@mui/icons-material";
 import { RowValues } from "oh-my-spreadsheets/build/types/table";
 import { checklistSchema, itemsCategoriesSchema } from "./types";
 import { groupBy } from "./utils";
@@ -41,7 +41,13 @@ export default function CheckboxList({
       })
       .filter((item) => item),
     "category",
-    "item"
+    (ic1, ic2) => {
+      if (ic1["checked"] === "TRUE" && ic2["checked"] !== "TRUE") return 1;
+      if (ic1["checked"] !== "TRUE" && ic2["checked"] === "TRUE") return -1;
+      return (ic1["item"] ?? "")
+        .toLowerCase()
+        .localeCompare((ic2["item"] ?? "").toLowerCase());
+    }
   );
 
   const toggleCheck = async (value: string) => {
@@ -55,8 +61,9 @@ export default function CheckboxList({
     <>
       {Object.entries(itemsByCategory).map(([group, values]) => (
         <List
-          sx={{ width: "100%", maxWidth: 360, bgcolor: "background.paper" }}
+          sx={{ width: "100%", bgcolor: "background.paper" }}
           subheader={<ListSubheader>{group}</ListSubheader>}
+          dense={true}
         >
           {values.map(({ item, category, checked }) => {
             const labelId = `checkbox-list-label-${item}`;
@@ -65,10 +72,13 @@ export default function CheckboxList({
                 key={item}
                 secondaryAction={
                   <IconButton edge="end" aria-label="comments">
-                    <CommentIcon />
+                    <Delete />
                   </IconButton>
                 }
                 disablePadding
+                style={{
+                  textDecoration: checked === "TRUE" ? "line-through" : "none",
+                }}
               >
                 <ListItemButton
                   role={undefined}

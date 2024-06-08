@@ -34,7 +34,11 @@ export default function Tagger({
       (category) => category !== undefined
     );
 
-  const groupsByValue = groupBy(itemsCategories, groupByCol, valuesCol);
+  const groupsByValue = groupBy(itemsCategories, groupByCol, (ic1, ic2) =>
+    (ic1[valuesCol] ?? "")
+      .toLowerCase()
+      .localeCompare((ic2[valuesCol] ?? "").toLowerCase())
+  );
   const allGroups = getGroups(itemsCategories);
   allGroups.sort();
 
@@ -72,14 +76,14 @@ export default function Tagger({
   };
 
   return (
-    <Stack spacing={1} sx={{ width: 500 }}>
+    <Stack spacing={1} sx={{ width: "100%" }}>
       {Object.entries(groupsByValue).map(([group, values]) => (
-        <Stack spacing={1} direction={"row"} sx={{ width: 500 }}>
+        <Stack spacing={1} direction={"row"} sx={{ width: "100%" }}>
           <IconButton onClick={() => onAdd(group)}>
             <Add />
           </IconButton>
           <Autocomplete
-            sx={{ width: 400 }}
+            sx={{ width: "100%" }}
             disableClearable
             freeSolo
             multiple

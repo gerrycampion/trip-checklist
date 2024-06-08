@@ -1,7 +1,7 @@
 export const groupBy = <T extends { [key: string]: any }>(
   list: T[],
   key: string,
-  valuesCol: string
+  valueCompareFn?: (a: T, b: T) => number
 ): { [group: string]: T[] } => {
   const sorted = sortObject(
     list.reduce((aggregate: { [key: string]: T[] }, current) => {
@@ -10,7 +10,7 @@ export const groupBy = <T extends { [key: string]: any }>(
     }, {})
   );
   for (const values of Object.values(sorted)) {
-    values.sort((ic1, ic2) => ic1[valuesCol].localeCompare(ic2[valuesCol]));
+    values.sort(valueCompareFn);
   }
   return sorted;
 };
@@ -19,7 +19,7 @@ export const sortObject = <T>(unordered: {
   [key: string]: T;
 }): { [key: string]: T } =>
   Object.keys(unordered)
-    .sort()
+    .sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()))
     .reduce((obj, key) => {
       obj[key] = unordered[key];
       return obj;

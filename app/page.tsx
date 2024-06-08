@@ -21,8 +21,6 @@ import SheetList from "./sheetList";
 import CheckboxList from "./checkboxList";
 
 // TODO:
-// sort list by alpha and then by checked state
-// strikethrough checked items
 // delete checklist item
 // Fix sizing
 // Create table, item, and category
@@ -85,9 +83,9 @@ export default function Home() {
           // orientation="vertical"
           // sx={{ borderRight: 1, borderColor: "divider" }}
         >
+          <Tab label={currentSheetName} value={currentSheetName}/>
           <Tab label="Items" value="Items" />
           <Tab label="Categories" value="Categories" />
-          <Tab label={currentSheetName} value={currentSheetName}></Tab>
         </TabList>
         <SheetList
           sheets={sheets}
