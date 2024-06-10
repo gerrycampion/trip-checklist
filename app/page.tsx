@@ -21,14 +21,15 @@ import SheetList from "./sheetList";
 import CheckboxList from "./checkboxList";
 
 // TODO:
-// edit items and category names
+// make public
+// google sheets too many read requests
 // delete checklist item
-// Fix sizing
+// Fix sizing - use fullwidth instead of %
 // Create table, item, and category
 // Rename table, item, and category
 // Delete table
 // react to changes (like checkbox) before syncing
-
+// checklist reset button
 
 export default function Home() {
   const [itemsCategories, setItemsCategories] = useState<
@@ -85,7 +86,7 @@ export default function Home() {
           // orientation="vertical"
           // sx={{ borderRight: 1, borderColor: "divider" }}
         >
-          <Tab label={currentSheetName} value={currentSheetName}/>
+          <Tab label={currentSheetName} value={currentSheetName} />
           <Tab label="Items" value="Items" />
           <Tab label="Categories" value="Categories" />
         </TabList>
@@ -113,6 +114,8 @@ export default function Home() {
             const sheet = await addItem(currentSheetName, group);
             getChecklist();
           }}
+          currentSheetName={currentSheetName}
+          setChecklist={setChecklist}
         />
       </TabPanel>
       <TabPanel value="Categories">
@@ -125,6 +128,8 @@ export default function Home() {
             const sheet = await addCategory(currentSheetName, group);
             getChecklist();
           }}
+          currentSheetName={currentSheetName}
+          setChecklist={setChecklist}
         />
       </TabPanel>
     </TabContext>

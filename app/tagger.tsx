@@ -8,9 +8,15 @@ import {
   TextField,
 } from "@mui/material";
 import { RowValues } from "oh-my-spreadsheets/build/types/table";
-import { itemsCategoriesSchema } from "./types";
+import { checklistSchema, itemsCategoriesSchema } from "./types";
 import { Dispatch, SetStateAction, SyntheticEvent } from "react";
-import { addItemCategory, deleteItemCategory } from "./actions/google-sheets";
+import {
+  addItemCategory,
+  deleteItemCategory,
+  readChecklist,
+  readItemsCategories,
+  update,
+} from "./actions/google-sheets";
 import { Add } from "@mui/icons-material";
 import { groupBy } from "./utils";
 
@@ -20,6 +26,8 @@ export default function Tagger({
   groupByCol,
   tagsCol,
   onAdd,
+  currentSheetName,
+  setChecklist,
 }: {
   itemsCategories: RowValues<typeof itemsCategoriesSchema>[];
   setItemsCategories: Dispatch<
@@ -28,6 +36,8 @@ export default function Tagger({
   groupByCol: "item" | "category";
   tagsCol: "item" | "category";
   onAdd: (group: string) => void;
+  currentSheetName: string;
+  setChecklist: Dispatch<SetStateAction<RowValues<typeof checklistSchema>[]>>;
 }) {
   const getGroups = (ics: RowValues<typeof itemsCategoriesSchema>[]) =>
     Array.from(new Set(ics.map((ic) => ic[tagsCol]))).filter(
@@ -75,23 +85,39 @@ export default function Tagger({
     }
   };
 
+  const onGroupChange = async (event: any) => {
+    if (event.keyCode === 13 /* Enter */) {
+      await update(
+        currentSheetName,
+        groupByCol,
+        event.target.defaultValue,
+        event.target.value
+      );
+      setItemsCategories(await readItemsCategories());
+      setChecklist(await readChecklist(currentSheetName));
+    }
+  };
+
   return (
     <Stack spacing={1} sx={{ width: "100%" }}>
       {Object.entries(groupsByValue).map(([group, tags]) => (
-        <Stack spacing={1} direction={"row"} sx={{ width: "100%" }}>
+        <Stack
+          key={`tagger-${group}`}
+          spacing={1}
+          direction={"row"}
+          sx={{ width: "100%" }}
+        >
           <IconButton onClick={() => onAdd(group)}>
             <Add />
           </IconButton>
+          <TextField defaultValue={group} onKeyUp={onGroupChange} />
           <Autocomplete
             sx={{ width: "100%" }}
             disableClearable
             freeSolo
             multiple
-            key={`tagger-${group}`}
             options={allGroups}
-            value={tags
-              .filter((ic) => ic[tagsCol])
-              .map((ic) => ic[tagsCol])}
+            value={tags.filter((ic) => ic[tagsCol]).map((ic) => ic[tagsCol])}
             onChange={(event: any, newTags: string[], reason, details) => {
               onAutoCompleteChange(group, event, newTags, reason, details);
             }}
@@ -108,6 +134,7 @@ export default function Tagger({
             renderInput={(params) => (
               <TextField
                 {...params}
+                id={group}
                 variant="filled"
                 label={group}
                 placeholder="Tags"

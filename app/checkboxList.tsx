@@ -61,6 +61,7 @@ export default function CheckboxList({
     <>
       {Object.entries(itemsByCategory).map(([group, values]) => (
         <List
+          key={`checklist-${group}`}
           sx={{ width: "100%", bgcolor: "background.paper" }}
           subheader={<ListSubheader>{group}</ListSubheader>}
           dense={true}

@@ -18,18 +18,21 @@ const itemsCategoriesTable = new Table<typeof itemsCategoriesSchema>(
   }
 );
 
-export async function readItemsCategories() {
-  return itemsCategoriesTable.read();
-}
-
-export async function readChecklist(sheet: string) {
-  const table = new Table<typeof checklistSchema>(checklistSchema, {
+function getChecklistTable(sheet: string) {
+  return new Table<typeof checklistSchema>(checklistSchema, {
     spreadsheetID: process.env.SPREADSHEET_ID!,
     sheet: sheet,
     email: process.env.CLIENT_EMAIL!,
     privateKey: process.env.PRIVATE_KEY!,
   });
-  return table.read();
+}
+
+export async function readItemsCategories() {
+  return itemsCategoriesTable.read();
+}
+
+export async function readChecklist(sheet: string) {
+  return getChecklistTable(sheet).read();
 }
 
 export async function setChecked(
@@ -37,12 +40,7 @@ export async function setChecked(
   value: string,
   checked: boolean
 ) {
-  const table = new Table<typeof checklistSchema>(checklistSchema, {
-    spreadsheetID: process.env.SPREADSHEET_ID!,
-    sheet: sheet,
-    email: process.env.CLIENT_EMAIL!,
-    privateKey: process.env.PRIVATE_KEY!,
-  });
+  const table = getChecklistTable(sheet);
   await table.update({
     where: { item: value },
     data: { checked: checked ? "TRUE" : "FALSE" },
@@ -146,12 +144,7 @@ export async function activateSheet(sheetName: string) {
 }
 
 export async function addItem(sheet: string, item: string) {
-  const table = new Table<typeof checklistSchema>(checklistSchema, {
-    spreadsheetID: process.env.SPREADSHEET_ID!,
-    sheet: sheet,
-    email: process.env.CLIENT_EMAIL!,
-    privateKey: process.env.PRIVATE_KEY!,
-  });
+  const table = getChecklistTable(sheet);
   const results = await table.read({
     where: { item },
   });
@@ -167,5 +160,24 @@ export async function addCategory(sheetName: string, category: string) {
   });
   for (const result of results) {
     await addItem(sheetName, result.item);
+  }
+}
+
+export async function update(
+  sheet: string,
+  columnName: string,
+  previousValue: string,
+  newValue: string
+) {
+  await itemsCategoriesTable.update({
+    where: { [columnName]: previousValue },
+    data: { [columnName]: newValue },
+  });
+  if (columnName === "item") {
+    const checklistTable = getChecklistTable(sheet);
+    await checklistTable.update({
+      where: { [columnName]: previousValue },
+      data: { [columnName]: newValue },
+    });
   }
 }
