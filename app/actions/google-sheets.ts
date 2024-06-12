@@ -7,6 +7,20 @@ import {
   checklistSchema,
 } from "../types";
 import { google } from "googleapis";
+import {
+  Field,
+  Keys,
+  SPREADSHEETS_COLUMNS,
+  Values,
+} from "oh-my-spreadsheets/build/types/table";
+
+const client = new google.auth.JWT(
+  process.env.CLIENT_EMAIL,
+  undefined,
+  process.env.PRIVATE_KEY,
+  ["https://www.googleapis.com/auth/spreadsheets"]
+);
+const gsapi = google.sheets({ version: "v4", auth: client });
 
 const itemsCategoriesTable = new Table<typeof itemsCategoriesSchema>(
   itemsCategoriesSchema,
@@ -80,14 +94,6 @@ export async function readSheetNames() {
   return itemsCategoriesTable.readSheets();
 }
 
-const client = new google.auth.JWT(
-  process.env.CLIENT_EMAIL,
-  undefined,
-  process.env.PRIVATE_KEY,
-  ["https://www.googleapis.com/auth/spreadsheets"]
-);
-const gsapi = google.sheets({ version: "v4", auth: client });
-
 export async function createSheet(sheetName: string) {
   const result = await gsapi.spreadsheets.batchUpdate({
     spreadsheetId: process.env.SPREADSHEET_ID,
@@ -154,13 +160,57 @@ export async function addItem(sheet: string, item: string) {
   await table.create({ data: { item, checked: "false" } });
 }
 
-export async function addCategory(sheetName: string, category: string) {
-  const results = await itemsCategoriesTable.read({
+async function _create(
+  sheet,
+  options: {
+    data: Record<Values<typeof checklistSchema>, Field>[];
+  }
+) {
+  const __invertedScheme = Object.keys(checklistSchema).reduce((acc, k) => {
+    acc[checklistSchema[k as keyof typeof checklistSchema]] = k;
+    return acc;
+  }, {} as Record<Values<typeof checklistSchema>, Field>);
+  const { data = [] } = options;
+  const values = data.map((record) =>
+    Object.keys(record).reduce<string[]>((acc, key) => {
+      const _k = key as Keys<typeof record>;
+      const val = record[_k];
+      const col = __invertedScheme[_k] as Keys<typeof SPREADSHEETS_COLUMNS>;
+      const ind: number = SPREADSHEETS_COLUMNS[col];
+      if (typeof ind === "number") {
+        acc[ind] = val;
+      }
+      return acc;
+    }, [])
+  );
+
+  await gsapi.spreadsheets.values.append({
+    spreadsheetId: process.env.SPREADSHEET_ID,
+    valueInputOption: "USER_ENTERED",
+    range: `${sheet}!A1:A`,
+    requestBody: {
+      values: values, // [ [ "Avalue", "Bvalue", "Cvalue"... ],... ]
+    },
+  });
+}
+
+export async function addCategory(sheet: string, category: string) {
+  const categoryResults = await itemsCategoriesTable.read({
     where: { category },
   });
-  for (const result of results) {
-    await addItem(sheetName, result.item);
-  }
+  const checklistTable = getChecklistTable(sheet);
+  const checklistResults = await checklistTable.read();
+  const filtered = categoryResults.filter(
+    (categoryResult) =>
+      !checklistResults.some(
+        (checklistResult) => checklistResult.item === categoryResult.item
+      )
+  );
+  const data = filtered.map((result) => ({
+    item: result.item,
+    checked: "false",
+  }));
+  await _create(sheet, { data });
 }
 
 export async function update(

@@ -23,6 +23,7 @@ import CheckboxList from "./checkboxList";
 // TODO:
 // make public
 // google sheets too many read requests
+// use spreadsheets.values/batchGetByDataFilter and batch delete by data filter, etc
 // delete checklist item
 // Fix sizing - use fullwidth instead of %
 // Create table, item, and category
