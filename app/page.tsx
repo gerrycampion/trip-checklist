@@ -13,7 +13,7 @@ import {
   readItemsCategories,
   readSheetNames,
 } from "./actions/google-sheets";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Stack, Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { sheets_v4 } from "googleapis";
@@ -21,7 +21,8 @@ import SheetList from "./sheetList";
 import CheckboxList from "./checkboxList";
 
 // TODO:
-// make public
+// print all sheets requests and troubleshoot "too many requests" error
+// bug - sometimes when adding a category to item, the item gets deleted. might be when the category was already there?
 // create test sheet for omg
 // create pr for create bulk
 // use spreadsheets.values/batchGetByDataFilter and batch delete by data filter, etc
@@ -60,10 +61,10 @@ export default function Home() {
     setSheets(sns);
   };
 
-  const getChecklist = async () => {
+  const getChecklist = useCallback(async () => {
     const cl = await readChecklist(currentSheetName);
     setChecklist(cl);
-  };
+  }, [currentSheetName]);
 
   useEffect(() => {
     getSheetNames();
@@ -72,7 +73,7 @@ export default function Home() {
 
   useEffect(() => {
     getChecklist();
-  }, [currentSheetName]);
+  }, [currentSheetName, getChecklist]);
 
   const handleTabChange = (event: React.SyntheticEvent, newTab: string) => {
     setTab(newTab);
