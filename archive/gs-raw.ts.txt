@@ -1,0 +1,45 @@
+async function getAuth() {
+  return google.auth.getClient({
+    projectId: process.env.PROJECT_ID,
+    credentials: {
+      type: "service_account",
+      project_id: process.env.PROJECT_ID,
+      private_key_id: process.env.PRIVATE_KEY_ID,
+      private_key: process.env.PRIVATE_KEY,
+      client_email: process.env.CLIENT_EMAIL,
+      universe_domain: "googleapis.com",
+    },
+    scopes: ["https://www.googleapis.com/auth/spreadsheets"],
+  });
+}
+
+async function getSheets() {
+  return google.sheets({ version: "v4", auth: await getAuth() });
+}
+
+export async function getSheetData() {
+  const data = await (
+    await getSheets()
+  ).spreadsheets.values.get({
+    spreadsheetId: process.env.SPREADSHEET_ID,
+    range: "Items_Categories!A:B",
+  });
+
+  return { data: data.data.values };
+}
+
+export async function appendSheetData() {
+  await (
+    await getSheets()
+  ).spreadsheets.values.append({
+    spreadsheetId: process.env.SPREADSHEET_ID,
+    range: "Items_Categories!A:A",
+    valueInputOption: "USER_ENTERED",
+    requestBody: {
+      values: [
+        ["TEST1", "TEST2"],
+        ["TEST3", "TEST4"],
+      ],
+    },
+  });
+}
