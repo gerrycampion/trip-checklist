@@ -74,7 +74,7 @@ export default function Tagger({
       ]);
       const ics = await addItemCategory(itemCategory);
       setItemsCategories(ics);
-    } else if (reason === "removeOption") {
+    } else if (reason === "removeOption" && event.type === "click") {
       setItemsCategories(
         itemsCategories.filter(
           (ic) => ic[groupByCol] !== group || ic[tagsCol] !== details?.option

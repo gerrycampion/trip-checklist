@@ -20,12 +20,14 @@ import { sheets_v4 } from "googleapis";
 import SheetList from "./sheetList";
 import CheckboxList from "./checkboxList";
 
-// TODO:
-// print all sheets requests and troubleshoot "too many requests" error
-// bug - sometimes when adding a category to item, the item gets deleted. might be when the category was already there?
-// create test sheet for omg
+// PENDING:
 // create pr for create bulk
+
+// TODO:
 // use spreadsheets.values/batchGetByDataFilter and batch delete by data filter, etc
+// print all sheets requests and troubleshoot "too many requests" error
+// mobile checklist site shows next instead of submit
+// add auth
 // delete checklist item
 // Fix sizing - use fullwidth instead of %
 // Create table, item, and category
