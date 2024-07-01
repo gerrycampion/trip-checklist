@@ -20,10 +20,8 @@ import { sheets_v4 } from "googleapis";
 import SheetList from "./sheetList";
 import CheckboxList from "./checkboxList";
 
-// PENDING:
-// create pr for create bulk
-
 // TODO:
+// Rename sheet method in oms
 // use spreadsheets.values/batchGetByDataFilter and batch delete by data filter, etc
 // print all sheets requests and troubleshoot "too many requests" error
 // mobile checklist site shows next instead of submit
