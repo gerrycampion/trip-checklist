@@ -89,20 +89,8 @@ export async function readSheetNames() {
 }
 
 export async function createSheet(sheetName: string) {
-  const result = await gsapi.spreadsheets.batchUpdate({
-    spreadsheetId: process.env.SPREADSHEET_ID,
-    requestBody: {
-      requests: [
-        {
-          addSheet: {
-            properties: {
-              title: sheetName,
-            },
-          },
-        },
-      ],
-    },
-  });
+  const table = getChecklistTable(sheetName);
+  await table.createTable();
   return;
 }
 

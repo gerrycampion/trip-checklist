@@ -21,10 +21,11 @@ import SheetList from "./sheetList";
 import CheckboxList from "./checkboxList";
 
 // TODO:
+// mobile checklist site shows next instead of submit
+// Add indicator for items in the tagger that are not in the checkboxlist
 // Rename sheet method in oms
 // use spreadsheets.values/batchGetByDataFilter and batch delete by data filter, etc
 // print all sheets requests and troubleshoot "too many requests" error
-// mobile checklist site shows next instead of submit
 // add auth
 // delete checklist item
 // Fix sizing - use fullwidth instead of %
