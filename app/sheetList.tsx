@@ -46,7 +46,9 @@ export default function SheetList({
         .map((sheet) => sheet?.properties?.title)}
       sx={{ width: 300 }}
       freeSolo
-      renderInput={(params) => <TextField {...params} label="List" />}
+      renderInput={(params) => (
+        <TextField {...params} label="List" type="submit" />
+      )}
     />
   );
 }

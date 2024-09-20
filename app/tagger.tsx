@@ -138,6 +138,7 @@ export default function Tagger({
                 variant="filled"
                 label={group}
                 placeholder="Tags"
+                type="submit"
               />
             )}
           />
