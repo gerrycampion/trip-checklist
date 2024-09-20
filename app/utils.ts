@@ -24,3 +24,16 @@ export const sortObject = <T>(unordered: {
       obj[key] = unordered[key];
       return obj;
     }, {});
+
+export const unique = (
+  duplicates: object[],
+  groupBy: string,
+  keyToReplace: string,
+  replaceValue: string
+) =>
+  duplicates
+    .filter(
+      (obj, index) =>
+        index === duplicates.findIndex((o) => obj[groupBy] === o[groupBy])
+    )
+    .map((obj) => ({ ...obj, ...{ [keyToReplace]: replaceValue } }));
