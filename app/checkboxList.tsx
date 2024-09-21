@@ -11,7 +11,7 @@ import { RowValues } from "oh-my-spreadsheets/build/types/table";
 import { checklistSchema, itemsCategoriesSchema } from "./types";
 import { groupBy, unique } from "./utils";
 import { ListSubheader } from "@mui/material";
-import { setChecked } from "./actions/google-sheets";
+import { deleteItem, setChecked } from "./actions/google-sheets";
 
 export default function CheckboxList({
   currentSheetName,
@@ -60,6 +60,11 @@ export default function CheckboxList({
     setChecklist(result);
   };
 
+  const onDelete = async (value: string) => {
+    const result = await deleteItem(currentSheetName, value);
+    setChecklist(result);
+  };
+
   return (
     <>
       {Object.entries(itemsByCategory).map(([group, values]) => (
@@ -75,7 +80,11 @@ export default function CheckboxList({
               <ListItem
                 key={item}
                 secondaryAction={
-                  <IconButton edge="end" aria-label="comments">
+                  <IconButton
+                    edge="end"
+                    aria-label="comments"
+                    onClick={() => onDelete(item)}
+                  >
                     <Delete />
                   </IconButton>
                 }

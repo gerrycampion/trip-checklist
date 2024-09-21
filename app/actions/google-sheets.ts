@@ -142,6 +142,12 @@ export async function addItem(sheet: string, item: string) {
   await table.create({ data: { item, checked: "false" } });
 }
 
+export async function deleteItem(sheet: string, item: string) {
+  const table = getChecklistTable(sheet);
+  await table.delete({ where: { item } });
+  return table.read();
+}
+
 export async function addCategory(sheet: string, category: string) {
   const categoryResults = await itemsCategoriesTable.read({
     where: { category },

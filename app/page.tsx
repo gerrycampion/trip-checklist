@@ -21,18 +21,16 @@ import SheetList from "./sheetList";
 import CheckboxList from "./checkboxList";
 
 // TODO:
-// mobile checklist site shows next instead of submit
+// react to changes (like checkbox) before syncing
 // Add indicator for items in the tagger that are not in the checkboxlist
 // Rename sheet method in oms
 // use spreadsheets.values/batchGetByDataFilter and batch delete by data filter, etc
 // print all sheets requests and troubleshoot "too many requests" error
 // add auth
-// delete checklist item
 // Fix sizing - use fullwidth instead of %
 // Create table, item, and category
 // Rename table, item, and category
 // Delete table
-// react to changes (like checkbox) before syncing
 // checklist reset button
 
 export default function Home() {
