@@ -110,7 +110,11 @@ export default function Tagger({
           <IconButton onClick={() => onAdd(group)}>
             <Add />
           </IconButton>
-          <TextField defaultValue={group} onKeyUp={onGroupChange} />
+          <TextField
+            defaultValue={group}
+            onKeyUp={onGroupChange}
+            type="search"
+          />
           <Autocomplete
             sx={{ width: "100%" }}
             disableClearable
@@ -138,7 +142,7 @@ export default function Tagger({
                 variant="filled"
                 label={group}
                 placeholder="Tags"
-                type="submit"
+                type="search"
               />
             )}
           />

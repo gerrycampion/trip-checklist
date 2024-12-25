@@ -47,7 +47,7 @@ export default function SheetList({
       sx={{ width: 300 }}
       freeSolo
       renderInput={(params) => (
-        <TextField {...params} label="List" type="submit" />
+        <TextField {...params} label="List" type="search" />
       )}
     />
   );
