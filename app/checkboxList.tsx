@@ -10,7 +10,7 @@ import { Delete } from "@mui/icons-material";
 import { RowValues } from "oh-my-spreadsheets/build/types/table";
 import { checklistSchema, itemsCategoriesSchema } from "./types";
 import { groupBy, unique } from "./utils";
-import { ListSubheader } from "@mui/material";
+import { Box, ListSubheader } from "@mui/material";
 import { deleteItem, setChecked } from "./actions/google-sheets";
 
 export default function CheckboxList({
@@ -79,15 +79,9 @@ export default function CheckboxList({
             return (
               <ListItem
                 key={item}
-                secondaryAction={
-                  <IconButton
-                    edge="end"
-                    aria-label="comments"
-                    onClick={() => onDelete(item)}
-                  >
-                    <Delete />
-                  </IconButton>
-                }
+                // secondaryAction={
+                // Button could go here, but it shows up all the way on the right
+                // }
                 disablePadding
                 style={{
                   textDecoration: checked === "TRUE" ? "line-through" : "none",
@@ -107,6 +101,13 @@ export default function CheckboxList({
                       inputProps={{ "aria-labelledby": labelId }}
                     />
                   </ListItemIcon>
+                  <IconButton
+                    aria-label="comments"
+                    onClick={() => onDelete(item)}
+                  >
+                    <Delete />
+                  </IconButton>
+                  <Box sx={{ px: "20px" }} />
                   <ListItemText id={labelId} primary={item} />
                 </ListItemButton>
               </ListItem>
