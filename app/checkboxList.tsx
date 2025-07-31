@@ -9,7 +9,7 @@ import IconButton from "@mui/material/IconButton";
 import { Delete } from "@mui/icons-material";
 import { RowValues } from "oh-my-spreadsheets/build/types/table";
 import { checklistSchema, itemsCategoriesSchema } from "./types";
-import { groupBy, unique } from "./utils";
+import { ALL, groupBy, unique } from "./utils";
 import { Box, ListSubheader } from "@mui/material";
 import { deleteItem, setChecked } from "./actions/google-sheets";
 
@@ -32,10 +32,7 @@ export default function CheckboxList({
   >;
 }) {
   const itemsByCategory = groupBy(
-    [
-      ...unique(itemsCategories, "item", "category", "_ALL_"),
-      ...itemsCategories,
-    ]
+    [...unique(itemsCategories, "item", "category", ALL), ...itemsCategories]
       .map(({ item: item1, category }) => {
         const checkItem = checklist.find(({ item: item2 }) => item1 === item2);
         return checkItem
@@ -67,7 +64,7 @@ export default function CheckboxList({
 
   return (
     <>
-      {Object.entries(itemsByCategory).map(([group, values]) => (
+      {Array.from(itemsByCategory.entries(), ([group, values]) => (
         <List
           key={`checklist-${group}`}
           sx={{ width: "100%", bgcolor: "background.paper" }}

@@ -100,7 +100,7 @@ export default function Tagger({
 
   return (
     <Stack spacing={1} sx={{ width: "100%" }}>
-      {Object.entries(groupsByValue).map(([group, tags]) => (
+      {Array.from(groupsByValue.entries(), ([group, tags]) => (
         <Stack
           key={`tagger-${group}`}
           spacing={1}
