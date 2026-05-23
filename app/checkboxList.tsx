@@ -61,7 +61,7 @@ export default function CheckboxList({
       return (ic1["item"] ?? "")
         .toLowerCase()
         .localeCompare((ic2["item"] ?? "").toLowerCase());
-    }
+    },
   );
 
   const toggleCheck = async (value: string) => {
@@ -71,9 +71,7 @@ export default function CheckboxList({
     addPending(value);
     setChecklist(
       checklist.map((cl) =>
-        cl.item === value
-          ? { ...cl, checked: checked ? "TRUE" : "FALSE" }
-          : cl,
+        cl.item === value ? { ...cl, checked: checked ? "TRUE" : "FALSE" } : cl,
       ),
     );
     try {

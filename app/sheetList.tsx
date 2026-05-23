@@ -29,7 +29,7 @@ export default function SheetList({
     event: SyntheticEvent<Element, Event>,
     value: string,
     reason: AutocompleteChangeReason,
-    details?: AutocompleteChangeDetails
+    details?: AutocompleteChangeDetails,
   ) => {
     setLoading(true);
     try {

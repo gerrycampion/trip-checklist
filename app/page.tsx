@@ -89,96 +89,96 @@ export default function Home() {
 
   return (
     <>
-    <TabContext value={tab}>
-      <Stack direction={"row"}>
-        <TabList
-          onChange={handleTabChange}
-          variant="scrollable"
-          scrollButtons="auto"
-          // orientation="vertical"
-          // sx={{ borderRight: 1, borderColor: "divider" }}
-        >
-          <Tab label={currentSheetName} value={currentSheetName} />
-          <Tab label="Items" value="Items" />
-          <Tab label="Categories" value="Categories" />
-        </TabList>
-        <SheetList
-          sheets={sheets}
-          currentSheetName={currentSheetName}
-          getSheetNames={getSheetNames}
-          onError={onError}
-          onSuccess={onSuccess}
-        />
-      </Stack>
-      <TabPanel key={currentSheetName} value={currentSheetName}>
-        <CheckboxList
-          currentSheetName={currentSheetName}
-          itemsCategories={itemsCategories}
-          checklist={checklist}
-          setChecklist={setChecklist}
-          onError={onError}
-          onSuccess={onSuccess}
-        />
-      </TabPanel>
-      <TabPanel value="Items">
-        <Tagger
-          itemsCategories={itemsCategories}
-          setItemsCategories={setItemsCategories}
-          groupByCol="item"
-          tagsCol="category"
-          onAdd={async (group) => {
-            try {
-              await addItem(currentSheetName, group);
-              await getChecklist();
-              onSuccess("Added to list");
-            } catch {
-              onError("Failed to add item to list");
-            }
-          }}
-          currentSheetName={currentSheetName}
-          checklist={checklist}
-          setChecklist={setChecklist}
-          onError={onError}
-          onSuccess={onSuccess}
-        />
-      </TabPanel>
-      <TabPanel value="Categories">
-        <Tagger
-          itemsCategories={itemsCategories}
-          setItemsCategories={setItemsCategories}
-          groupByCol="category"
-          tagsCol="item"
-          onAdd={async (group) => {
-            try {
-              await addCategory(currentSheetName, group);
-              await getChecklist();
-              onSuccess("Added to list");
-            } catch {
-              onError("Failed to add category to list");
-            }
-          }}
-          currentSheetName={currentSheetName}
-          checklist={checklist}
-          setChecklist={setChecklist}
-          onError={onError}
-          onSuccess={onSuccess}
-        />
-      </TabPanel>
-    </TabContext>
-    <Snackbar
-      open={notification !== null}
-      autoHideDuration={4000}
-      onClose={() => setNotification(null)}
-      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
-    >
-      <Alert
+      <TabContext value={tab}>
+        <Stack direction={"row"}>
+          <TabList
+            onChange={handleTabChange}
+            variant="scrollable"
+            scrollButtons="auto"
+            // orientation="vertical"
+            // sx={{ borderRight: 1, borderColor: "divider" }}
+          >
+            <Tab label={currentSheetName} value={currentSheetName} />
+            <Tab label="Items" value="Items" />
+            <Tab label="Categories" value="Categories" />
+          </TabList>
+          <SheetList
+            sheets={sheets}
+            currentSheetName={currentSheetName}
+            getSheetNames={getSheetNames}
+            onError={onError}
+            onSuccess={onSuccess}
+          />
+        </Stack>
+        <TabPanel key={currentSheetName} value={currentSheetName}>
+          <CheckboxList
+            currentSheetName={currentSheetName}
+            itemsCategories={itemsCategories}
+            checklist={checklist}
+            setChecklist={setChecklist}
+            onError={onError}
+            onSuccess={onSuccess}
+          />
+        </TabPanel>
+        <TabPanel value="Items">
+          <Tagger
+            itemsCategories={itemsCategories}
+            setItemsCategories={setItemsCategories}
+            groupByCol="item"
+            tagsCol="category"
+            onAdd={async (group) => {
+              try {
+                await addItem(currentSheetName, group);
+                await getChecklist();
+                onSuccess("Added to list");
+              } catch {
+                onError("Failed to add item to list");
+              }
+            }}
+            currentSheetName={currentSheetName}
+            checklist={checklist}
+            setChecklist={setChecklist}
+            onError={onError}
+            onSuccess={onSuccess}
+          />
+        </TabPanel>
+        <TabPanel value="Categories">
+          <Tagger
+            itemsCategories={itemsCategories}
+            setItemsCategories={setItemsCategories}
+            groupByCol="category"
+            tagsCol="item"
+            onAdd={async (group) => {
+              try {
+                await addCategory(currentSheetName, group);
+                await getChecklist();
+                onSuccess("Added to list");
+              } catch {
+                onError("Failed to add category to list");
+              }
+            }}
+            currentSheetName={currentSheetName}
+            checklist={checklist}
+            setChecklist={setChecklist}
+            onError={onError}
+            onSuccess={onSuccess}
+          />
+        </TabPanel>
+      </TabContext>
+      <Snackbar
+        open={notification !== null}
+        autoHideDuration={4000}
         onClose={() => setNotification(null)}
-        severity={notification?.severity ?? "error"}
-        sx={{ width: "100%" }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
       >
-        {notification?.message}
-      </Alert>
-    </Snackbar>
+        <Alert
+          onClose={() => setNotification(null)}
+          severity={notification?.severity ?? "error"}
+          sx={{ width: "100%" }}
+        >
+          {notification?.message}
+        </Alert>
+      </Snackbar>
     </>
   );
 }
