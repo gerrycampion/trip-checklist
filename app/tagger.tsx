@@ -27,6 +27,7 @@ export default function Tagger({
   tagsCol,
   onAdd,
   currentSheetName,
+  checklist,
   setChecklist,
 }: {
   itemsCategories: RowValues<typeof itemsCategoriesSchema>[];
@@ -37,17 +38,20 @@ export default function Tagger({
   tagsCol: "item" | "category";
   onAdd: (group: string) => void;
   currentSheetName: string;
+  checklist: RowValues<typeof checklistSchema>[];
   setChecklist: Dispatch<SetStateAction<RowValues<typeof checklistSchema>[]>>;
 }) {
   const getGroups = (ics: RowValues<typeof itemsCategoriesSchema>[]) =>
     Array.from(new Set(ics.map((ic) => ic[tagsCol]))).filter(
-      (category) => category !== undefined
+      (category) => category !== undefined,
     );
+
+  const checklistItems = new Set(checklist.map((cl) => cl.item));
 
   const groupsByValue = groupBy(itemsCategories, groupByCol, (ic1, ic2) =>
     (ic1[tagsCol] ?? "")
       .toLowerCase()
-      .localeCompare((ic2[tagsCol] ?? "").toLowerCase())
+      .localeCompare((ic2[tagsCol] ?? "").toLowerCase()),
   );
   const allGroups = getGroups(itemsCategories);
   allGroups.sort();
@@ -57,7 +61,7 @@ export default function Tagger({
     event: SyntheticEvent<Element, Event>,
     tags: string[],
     reason: AutocompleteChangeReason,
-    details?: AutocompleteChangeDetails<string>
+    details?: AutocompleteChangeDetails<string>,
   ) => {
     console.log({ group, event, tags, reason, details });
     const itemCategory = {
@@ -77,8 +81,8 @@ export default function Tagger({
     } else if (reason === "removeOption" && event.type === "click") {
       setItemsCategories(
         itemsCategories.filter(
-          (ic) => ic[groupByCol] !== group || ic[tagsCol] !== details?.option
-        )
+          (ic) => ic[groupByCol] !== group || ic[tagsCol] !== details?.option,
+        ),
       );
       const ics = await deleteItemCategory(itemCategory);
       setItemsCategories(ics);
@@ -91,7 +95,7 @@ export default function Tagger({
         currentSheetName,
         groupByCol,
         event.target.defaultValue,
-        event.target.value
+        event.target.value,
       );
       setItemsCategories(await readItemsCategories());
       setChecklist(await readChecklist(currentSheetName));
@@ -107,7 +111,10 @@ export default function Tagger({
           direction={"row"}
           sx={{ width: "100%" }}
         >
-          <IconButton onClick={() => onAdd(group)}>
+          <IconButton
+            onClick={() => onAdd(group)}
+            disabled={groupByCol === "item" && checklistItems.has(group)}
+          >
             <Add />
           </IconButton>
           <TextField
@@ -132,6 +139,11 @@ export default function Tagger({
                   label={option}
                   {...getTagProps({ index })}
                   key={getTagProps({ index }).key}
+                  sx={
+                    tagsCol === "item" && !checklistItems.has(option)
+                      ? { backgroundColor: "white" }
+                      : undefined
+                  }
                 />
               ))
             }

@@ -55,7 +55,7 @@ export default function Home() {
       (
         sns.find((sheet) => sheet.properties?.title.startsWith("*")) ??
         sns.find((sheet) => sheet.properties?.title !== itemsCategoriesSheet)
-      )?.properties?.title
+      )?.properties?.title,
     );
     setSheets(sns);
   };
@@ -117,6 +117,7 @@ export default function Home() {
             getChecklist();
           }}
           currentSheetName={currentSheetName}
+          checklist={checklist}
           setChecklist={setChecklist}
         />
       </TabPanel>
@@ -131,6 +132,7 @@ export default function Home() {
             getChecklist();
           }}
           currentSheetName={currentSheetName}
+          checklist={checklist}
           setChecklist={setChecklist}
         />
       </TabPanel>
