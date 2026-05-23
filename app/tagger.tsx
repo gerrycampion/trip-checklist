@@ -3,13 +3,14 @@ import {
   AutocompleteChangeDetails,
   AutocompleteChangeReason,
   Chip,
+  CircularProgress,
   IconButton,
   Stack,
   TextField,
 } from "@mui/material";
 import { RowValues } from "oh-my-spreadsheets/build/types/table";
 import { checklistSchema, itemsCategoriesSchema } from "./types";
-import { Dispatch, SetStateAction, SyntheticEvent } from "react";
+import { Dispatch, SetStateAction, SyntheticEvent, useState } from "react";
 import {
   addItemCategory,
   deleteItemCategory,
@@ -29,6 +30,8 @@ export default function Tagger({
   currentSheetName,
   checklist,
   setChecklist,
+  onError,
+  onSuccess,
 }: {
   itemsCategories: RowValues<typeof itemsCategoriesSchema>[];
   setItemsCategories: Dispatch<
@@ -36,10 +39,12 @@ export default function Tagger({
   >;
   groupByCol: "item" | "category";
   tagsCol: "item" | "category";
-  onAdd: (group: string) => void;
+  onAdd: (group: string) => Promise<void>;
   currentSheetName: string;
   checklist: RowValues<typeof checklistSchema>[];
   setChecklist: Dispatch<SetStateAction<RowValues<typeof checklistSchema>[]>>;
+  onError: (message: string) => void;
+  onSuccess: (message: string) => void;
 }) {
   const getGroups = (ics: RowValues<typeof itemsCategoriesSchema>[]) =>
     Array.from(new Set(ics.map((ic) => ic[tagsCol]))).filter(
@@ -47,6 +52,24 @@ export default function Tagger({
     );
 
   const checklistItems = new Set(checklist.map((cl) => cl.item));
+
+  const [pendingGroups, setPendingGroups] = useState<Set<string>>(new Set());
+  const [pendingAddGroups, setPendingAddGroups] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const addPending = (set: "groups" | "add", key: string) => {
+    const setter = set === "groups" ? setPendingGroups : setPendingAddGroups;
+    setter((prev) => new Set(prev).add(key));
+  };
+  const removePending = (set: "groups" | "add", key: string) => {
+    const setter = set === "groups" ? setPendingGroups : setPendingAddGroups;
+    setter((prev) => {
+      const next = new Set(prev);
+      next.delete(key);
+      return next;
+    });
+  };
 
   const groupsByValue = groupBy(itemsCategories, groupByCol, (ic1, ic2) =>
     (ic1[tagsCol] ?? "")
@@ -69,6 +92,8 @@ export default function Tagger({
       [tagsCol]: details?.option ?? "",
     } as { item: string; category: string };
     if (["createOption", "selectOption"].includes(reason)) {
+      const prevIcs = itemsCategories;
+      addPending("groups", group);
       setItemsCategories([
         ...itemsCategories,
         {
@@ -76,29 +101,65 @@ export default function Tagger({
           __tableRowIndex: itemsCategories.length,
         },
       ]);
-      const ics = await addItemCategory(itemCategory);
-      setItemsCategories(ics);
+      try {
+        const ics = await addItemCategory(itemCategory);
+        setItemsCategories(ics);
+        onSuccess("Tag added");
+      } catch {
+        setItemsCategories(prevIcs);
+        onError("Failed to add tag");
+      } finally {
+        removePending("groups", group);
+      }
     } else if (reason === "removeOption" && event.type === "click") {
+      const prevIcs = itemsCategories;
+      addPending("groups", group);
       setItemsCategories(
         itemsCategories.filter(
           (ic) => ic[groupByCol] !== group || ic[tagsCol] !== details?.option,
         ),
       );
-      const ics = await deleteItemCategory(itemCategory);
-      setItemsCategories(ics);
+      try {
+        const ics = await deleteItemCategory(itemCategory);
+        setItemsCategories(ics);
+        onSuccess("Tag removed");
+      } catch {
+        setItemsCategories(prevIcs);
+        onError("Failed to remove tag");
+      } finally {
+        removePending("groups", group);
+      }
     }
   };
 
   const onGroupChange = async (event: any) => {
     if (event.keyCode === 13 /* Enter */) {
-      await update(
-        currentSheetName,
-        groupByCol,
-        event.target.defaultValue,
-        event.target.value,
-      );
-      setItemsCategories(await readItemsCategories());
-      setChecklist(await readChecklist(currentSheetName));
+      const groupName = event.target.defaultValue;
+      addPending("groups", groupName);
+      try {
+        await update(
+          currentSheetName,
+          groupByCol,
+          groupName,
+          event.target.value,
+        );
+        setItemsCategories(await readItemsCategories());
+        setChecklist(await readChecklist(currentSheetName));
+        onSuccess("Renamed");
+      } catch {
+        onError("Failed to rename item");
+      } finally {
+        removePending("groups", groupName);
+      }
+    }
+  };
+
+  const handleAdd = async (group: string) => {
+    addPending("add", group);
+    try {
+      await onAdd(group);
+    } finally {
+      removePending("add", group);
     }
   };
 
@@ -112,21 +173,30 @@ export default function Tagger({
           sx={{ width: "100%" }}
         >
           <IconButton
-            onClick={() => onAdd(group)}
-            disabled={groupByCol === "item" && checklistItems.has(group)}
+            onClick={() => handleAdd(group)}
+            disabled={
+              (groupByCol === "item" && checklistItems.has(group)) ||
+              pendingAddGroups.has(group)
+            }
           >
-            <Add />
+            {pendingAddGroups.has(group) ? (
+              <CircularProgress size={24} />
+            ) : (
+              <Add />
+            )}
           </IconButton>
           <TextField
             defaultValue={group}
             onKeyUp={onGroupChange}
             type="search"
+            disabled={pendingGroups.has(group)}
           />
           <Autocomplete
             sx={{ width: "100%" }}
             disableClearable
             freeSolo
             multiple
+            loading={pendingGroups.has(group)}
             options={allGroups}
             value={tags.filter((ic) => ic[tagsCol]).map((ic) => ic[tagsCol])}
             onChange={(event: any, newTags: string[], reason, details) => {

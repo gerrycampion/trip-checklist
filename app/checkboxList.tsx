@@ -10,7 +10,7 @@ import { Delete } from "@mui/icons-material";
 import { RowValues } from "oh-my-spreadsheets/build/types/table";
 import { checklistSchema, itemsCategoriesSchema } from "./types";
 import { ALL, groupBy, unique } from "./utils";
-import { Box, ListSubheader } from "@mui/material";
+import { Box, CircularProgress, ListSubheader } from "@mui/material";
 import { deleteItem, setChecked } from "./actions/google-sheets";
 
 export default function CheckboxList({
@@ -18,6 +18,8 @@ export default function CheckboxList({
   itemsCategories,
   checklist,
   setChecklist,
+  onError,
+  onSuccess,
 }: {
   currentSheetName: string;
   itemsCategories: RowValues<typeof itemsCategoriesSchema>[];
@@ -30,7 +32,19 @@ export default function CheckboxList({
       }>[]
     >
   >;
+  onError: (message: string) => void;
+  onSuccess: (message: string) => void;
 }) {
+  const [pendingItems, setPendingItems] = useState<Set<string>>(new Set());
+
+  const addPending = (item: string) =>
+    setPendingItems((prev) => new Set(prev).add(item));
+  const removePending = (item: string) =>
+    setPendingItems((prev) => {
+      const next = new Set(prev);
+      next.delete(item);
+      return next;
+    });
   const itemsByCategory = groupBy(
     [...unique(itemsCategories, "item", "category", ALL), ...itemsCategories]
       .map(({ item: item1, category }) => {
@@ -51,15 +65,43 @@ export default function CheckboxList({
   );
 
   const toggleCheck = async (value: string) => {
+    const prevChecklist = checklist;
     const checked =
       checklist.find(({ item }) => item === value).checked !== "TRUE";
-    const result = await setChecked(currentSheetName, value, checked);
-    setChecklist(result);
+    addPending(value);
+    setChecklist(
+      checklist.map((cl) =>
+        cl.item === value
+          ? { ...cl, checked: checked ? "TRUE" : "FALSE" }
+          : cl,
+      ),
+    );
+    try {
+      const result = await setChecked(currentSheetName, value, checked);
+      setChecklist(result);
+      onSuccess(checked ? "Item checked" : "Item unchecked");
+    } catch {
+      setChecklist(prevChecklist);
+      onError("Failed to update item");
+    } finally {
+      removePending(value);
+    }
   };
 
   const onDelete = async (value: string) => {
-    const result = await deleteItem(currentSheetName, value);
-    setChecklist(result);
+    const prevChecklist = checklist;
+    addPending(value);
+    setChecklist(checklist.filter((cl) => cl.item !== value));
+    try {
+      const result = await deleteItem(currentSheetName, value);
+      setChecklist(result);
+      onSuccess("Item removed");
+    } catch {
+      setChecklist(prevChecklist);
+      onError("Failed to delete item");
+    } finally {
+      removePending(value);
+    }
   };
 
   return (
@@ -86,21 +128,29 @@ export default function CheckboxList({
               >
                 <ListItemButton
                   role={undefined}
-                  onClick={() => toggleCheck(item)}
+                  onClick={() => !pendingItems.has(item) && toggleCheck(item)}
                   dense
                 >
                   <ListItemIcon>
-                    <Checkbox
-                      edge="start"
-                      checked={checked === "TRUE"}
-                      tabIndex={-1}
-                      disableRipple
-                      inputProps={{ "aria-labelledby": labelId }}
-                    />
+                    {pendingItems.has(item) ? (
+                      <CircularProgress size={24} sx={{ ml: "3px" }} />
+                    ) : (
+                      <Checkbox
+                        edge="start"
+                        checked={checked === "TRUE"}
+                        tabIndex={-1}
+                        disableRipple
+                        inputProps={{ "aria-labelledby": labelId }}
+                      />
+                    )}
                   </ListItemIcon>
                   <IconButton
                     aria-label="comments"
-                    onClick={() => onDelete(item)}
+                    disabled={pendingItems.has(item)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete(item);
+                    }}
                   >
                     <Delete />
                   </IconButton>

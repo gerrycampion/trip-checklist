@@ -14,7 +14,7 @@ import {
   readSheetNames,
 } from "./actions/google-sheets";
 import { useCallback, useEffect, useState } from "react";
-import { Stack, Tab } from "@mui/material";
+import { Alert, Snackbar, Stack, Tab } from "@mui/material";
 import { TabContext, TabList, TabPanel } from "@mui/lab";
 import { sheets_v4 } from "googleapis";
 import SheetList from "./sheetList";
@@ -43,6 +43,15 @@ export default function Home() {
   const [checklist, setChecklist] = useState<
     RowValues<typeof checklistSchema>[]
   >([]);
+  const [notification, setNotification] = useState<{
+    message: string;
+    severity: "error" | "success";
+  } | null>(null);
+
+  const onError = (message: string) =>
+    setNotification({ message, severity: "error" });
+  const onSuccess = (message: string) =>
+    setNotification({ message, severity: "success" });
 
   const getItemsCategories = async () => {
     const ics = await readItemsCategories();
@@ -79,6 +88,7 @@ export default function Home() {
   };
 
   return (
+    <>
     <TabContext value={tab}>
       <Stack direction={"row"}>
         <TabList
@@ -96,6 +106,8 @@ export default function Home() {
           sheets={sheets}
           currentSheetName={currentSheetName}
           getSheetNames={getSheetNames}
+          onError={onError}
+          onSuccess={onSuccess}
         />
       </Stack>
       <TabPanel key={currentSheetName} value={currentSheetName}>
@@ -104,6 +116,8 @@ export default function Home() {
           itemsCategories={itemsCategories}
           checklist={checklist}
           setChecklist={setChecklist}
+          onError={onError}
+          onSuccess={onSuccess}
         />
       </TabPanel>
       <TabPanel value="Items">
@@ -113,12 +127,19 @@ export default function Home() {
           groupByCol="item"
           tagsCol="category"
           onAdd={async (group) => {
-            const sheet = await addItem(currentSheetName, group);
-            getChecklist();
+            try {
+              await addItem(currentSheetName, group);
+              await getChecklist();
+              onSuccess("Added to list");
+            } catch {
+              onError("Failed to add item to list");
+            }
           }}
           currentSheetName={currentSheetName}
           checklist={checklist}
           setChecklist={setChecklist}
+          onError={onError}
+          onSuccess={onSuccess}
         />
       </TabPanel>
       <TabPanel value="Categories">
@@ -128,14 +149,36 @@ export default function Home() {
           groupByCol="category"
           tagsCol="item"
           onAdd={async (group) => {
-            const sheet = await addCategory(currentSheetName, group);
-            getChecklist();
+            try {
+              await addCategory(currentSheetName, group);
+              await getChecklist();
+              onSuccess("Added to list");
+            } catch {
+              onError("Failed to add category to list");
+            }
           }}
           currentSheetName={currentSheetName}
           checklist={checklist}
           setChecklist={setChecklist}
+          onError={onError}
+          onSuccess={onSuccess}
         />
       </TabPanel>
     </TabContext>
+    <Snackbar
+      open={notification !== null}
+      autoHideDuration={4000}
+      onClose={() => setNotification(null)}
+      anchorOrigin={{ vertical: "bottom", horizontal: "center" }}
+    >
+      <Alert
+        onClose={() => setNotification(null)}
+        severity={notification?.severity ?? "error"}
+        sx={{ width: "100%" }}
+      >
+        {notification?.message}
+      </Alert>
+    </Snackbar>
+    </>
   );
 }
